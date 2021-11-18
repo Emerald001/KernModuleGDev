@@ -305,11 +305,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a4d6f4020cd7a94d8a5b22b0f819c29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnAmount: 50
-  SeperationAmount: 3
+  spawnAmount: 200
+  SeperationAmount: 12
   Speed: 8
-  Cohesion: 1
-  BoxSize: 20
+  Cohesion: 0.5
+  BoxSize: 100
+  BorderJump: 300
   Boids: []
   BoidPrefab: {fileID: 733148397822329307, guid: 17094c0eb063e5047852d4cd774d06d4, type: 3}
 --- !u!4 &843122930

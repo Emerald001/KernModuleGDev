@@ -9,6 +9,7 @@ public class BoidsManager : MonoBehaviour
     [SerializeField] private float Speed = 1;
     [SerializeField] private float Cohesion = 1f;
     [SerializeField] private float BoxSize = 1f;
+    [SerializeField] private float BorderJump = 1f;
 
     public List<GameObject> Boids = new List<GameObject>();
     public GameObject BoidPrefab;
@@ -46,13 +47,8 @@ public class BoidsManager : MonoBehaviour
             var distance = Vector3.Distance(transform.position, tmp.transform.position);
             if (distance > BoxSize)
             {
-                tmp.velocity = -tmp.velocity;
+                tmp.velocity = (transform.position - Boids[i].transform.position).normalized * BorderJump;
             }
-
-            //if(distance > BoxSize + 2f)
-            //{
-            //    tmp.transform.position = Vector3.zero;
-            //}
             tmp.UpdateBoids();
         }
 
