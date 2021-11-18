@@ -5,6 +5,10 @@ using UnityEngine;
 public class BoidsManager : MonoBehaviour
 {
     [SerializeField] private float spawnAmount;
+    [SerializeField] private float SeperationAmount = 1;
+    [SerializeField] private float Speed = 1;
+    [SerializeField] private float Cohesion = 1f;
+    [SerializeField] private float BoxSize = 1f;
 
     public List<GameObject> Boids = new List<GameObject>();
     public GameObject BoidPrefab;
@@ -13,20 +17,21 @@ public class BoidsManager : MonoBehaviour
     {
         for (int i = 0; i < spawnAmount; i++)
         {
-            var tmp = Instantiate(BoidPrefab);
-            var tmpComponents = tmp.GetComponent<BoidObject>();
-            tmpComponents.position = Vector3.zero;
-            tmpComponents.velocity = Vector3.zero;
-            tmpComponents.direction = Vector3.zero;
+            var tmp = Instantiate(BoidPrefab, new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), Random.Range(-5f, 5f)), Quaternion.identity);
             Boids.Add(tmp);
         }
 
-        Debug.Log(Boids.Count);
+        Time.timeScale = .05f;
+    }
+
+    private void Update()
+    {
+        MoveAllBoidsToNewPosition();
     }
 
     public void MoveAllBoidsToNewPosition()
     {
-        Vector3 v1 = Vector3.zero, v2 = Vector3.zero, v3 = Vector3.zero;
+        Vector3 v1 = Vector3.zero, v2 = Vector3.zero, v3 = Vector3.zero, v4 = Vector3.zero;
 
         for (int i = 0; i < Boids.Count; i++)
         {
@@ -35,10 +40,22 @@ public class BoidsManager : MonoBehaviour
             v1 = Rule1(tmp);
             v2 = Rule2(tmp);
             v3 = Rule3(tmp);
+            //v4 = Rule4(tmp);
 
-            tmp.velocity += v1 + v2 + v3;
-            tmp.position += tmp.velocity;
+            tmp.velocity += v1 + v2 + v3; 
+            var distance = Vector3.Distance(transform.position, tmp.transform.position);
+            if (distance > BoxSize)
+            {
+                tmp.velocity = -tmp.velocity;
+            }
+
+            //if(distance > BoxSize + 2f)
+            //{
+            //    tmp.transform.position = Vector3.zero;
+            //}
+            tmp.UpdateBoids();
         }
+
     }
 
     public Vector3 Rule1(BoidObject B)
@@ -50,12 +67,12 @@ public class BoidsManager : MonoBehaviour
             if(B == Boids[i])
                 continue;
 
-            AvPo += Boids[i].GetComponent<BoidObject>().position;
+            AvPo += Boids[i].transform.position;
         }
 
-        AvPo /= Boids.Count - 1;
+        AvPo = AvPo / (Boids.Count - 1);
 
-        return (AvPo - B.position) / 100;
+        return (AvPo - B.transform.position) / Cohesion;
     }
 
     public Vector3 Rule2(BoidObject B)
@@ -67,7 +84,10 @@ public class BoidsManager : MonoBehaviour
             if (B == Boids[i])
                 continue;
 
-            c -= B.position - Boids[i].GetComponent<BoidObject>().position;
+            if(Vector3.Distance(Boids[i].transform.position, B.transform.position) < SeperationAmount)
+            {
+                c -= Boids[i].transform.position - B.transform.position;
+            }
         }
 
         return c;
@@ -82,11 +102,33 @@ public class BoidsManager : MonoBehaviour
             if (B == Boids[i])
                 continue;
 
-            Vo += Boids[i].GetComponent<BoidObject>().velocity;
+            Vo += Boids[i].GetComponent<BoidObject>().velocity * Time.deltaTime;
         }
 
-        Vo /= Boids.Count - 1;
+        Vo = Vo / (Boids.Count - 1);
 
-        return Vo;
+        return (Vo - B.GetComponent<BoidObject>().velocity * Time.deltaTime) / Speed;
+    }
+
+    public Vector3 Rule4(BoidObject B) { 
+        float Xmin = -BoxSize, Xmax = BoxSize, Ymin = -BoxSize, Ymax = BoxSize, Zmin = -BoxSize, Zmax = BoxSize;
+        Vector3 v = Vector3.zero;
+
+        if (B.transform.position.x < Xmin)
+            v.x = 10;
+        else if (B.transform.position.x > Xmax)
+            v.x = -10;
+
+        if (B.transform.position.y < Ymin)
+            v.y = 10;
+        else if (B.transform.position.y > Ymax)
+            v.y = -10;
+
+        if (B.transform.position.z < Zmin)
+            v.z = 10;
+        else if (B.transform.position.z > Zmax)
+            v.z = -10;
+
+        return v;
     }
 }
